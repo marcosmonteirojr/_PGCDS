@@ -9,7 +9,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.tree import DecisionTreeClassifier
 import csv, random, os
 import numpy as np
-import scipy.stats as st
+
 
 os.environ['R_HOME'] = 'c:\\users\\marca\\anaconda3\\envs\\l\\lib\\R'
 # env = os.environ.copy()
@@ -161,7 +161,7 @@ def biuld_classifier_tree(X_train, y_train, X_val, y_val, X_test=None, y_test=No
 
         return tree, score, predict
 
-    elif (score_train):
+    elif score_train:
         score2 = tree.score(X_test, y_test)
         predict = tree.predict(X_test)
         return tree, score, score2, predict
@@ -203,11 +203,9 @@ def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None, s
         return perc, score
 
 
-def biuld_classifier_over(X, y, X_val, y_val, tam):
+def build_classifier_over(X, y, X_val, y_val, tam):
     '''
     retorna um perceptron com sua acuracia e com a lista de predicao
-    :param X_train: X do treino
-    :param y_train: y do treino
     :param X_val: X valida ou teste
     :param y_val: y valida, ou teste
     :param tam: tamanho da divisao do dataset de treino
@@ -390,7 +388,7 @@ def diversity_kapa(y_test, predicts):
                 continue
             else:
                 a, b, c, d = diversity._process_predictions(y_test, predicts[i], predicts[j], True)
-                if (a == size):
+                if a == size:
                     k_p = 1
                 else:
                     m = a + b + c + d
@@ -405,8 +403,8 @@ def diversity_kapa(y_test, predicts):
     return kappa_mean, kappa_std, kappa_all
 
 
-def biuld_csv_result(complexity_result, score, Q_test, Df, disp):
-    global base_name
+def biuld_csv_result(complexity_result, score, Q_test, Df, disp,base_name):
+
     header = ['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4',
               'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1',
               'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', '000000.T2', 'dimensionality.T3',
@@ -427,7 +425,7 @@ def biuld_csv_result(complexity_result, score, Q_test, Df, disp):
 def save_bag(inds, types, local, base_name, iteration):
     if types == 'validation':
         # print('entreivali')
-        if (os.path.exists(local + "Validacao/" + str(iteration)) == False):
+        if os.path.exists(local + "Validacao/" + str(iteration)) is False:
             os.system("mkdir -p " + local + "/" + str(iteration))
         with open(local + "/" + str(iteration) + "/" + base_name + ".csv", 'w') as f:
             # print('entreivali')
@@ -435,21 +433,21 @@ def save_bag(inds, types, local, base_name, iteration):
             w.writerow(inds)
 
     if types == "test":
-        if (os.path.exists(local + "Teste/" + str(iteration)) == False):
+        if os.path.exists(local + "Teste/" + str(iteration)) == False:
             os.system("mkdir -p " + local + "/" + str(iteration))
         with open(local + "/" + str(iteration) + "/" + base_name + ".csv", 'w') as f:
             w = csv.writer(f)
             w.writerow(inds)
 
     if types == "train":
-        if (os.path.exists(local + "Treino/" + str(iteration)) == False):
+        if os.path.exists(local + "Treino/" + str(iteration)) == False:
             os.system("mkdir -p " + local + "/" + str(iteration))
         with open(local + "/" + str(iteration) + "/" + base_name + ".csv", 'w') as f:
             w = csv.writer(f)
             w.writerow(inds)
 
     if types == "bags":
-        if (os.path.exists(local + "Bags/" + str(iteration)) == False):
+        if os.path.exists(local + "Bags/" + str(iteration)) == False:
             os.system("mkdir -p " + local + "/" + str(iteration))
         with open(local + "/" + str(iteration) + "/" + base_name + ".csv", 'a') as f:
             w = csv.writer(f)
