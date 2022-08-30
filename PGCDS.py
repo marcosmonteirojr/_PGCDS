@@ -7,33 +7,34 @@ from deap import creator
 from deap import tools
 from joblib import  Parallel, delayed
 import Util
+
 def distance(first=False, population=None):
-    global pop, name_individual, dist, bags, min_score, group, types, c, score, pred, pool
+    global pop, name_individual, bags, group, types
     dist = dict()
     dist['name'] = list()
     dist['dist'] = list()
     dist['diver'] = list()
     dist['score'] = list()
     dist['score_g'] = list()
-    if (first == True and generation == 0):
+    if first == True and generation == 0:
         dist['name'] = pop
-        r = Parallel(n_jobs=jobs)(delayed(parallel_distance)(i, bags, group, types) for i in range(len(dist['name'])))
+        r = Parallel(n_jobs=jobs)(delayed(parallel_distance)(i) for i in range(len(dist['name'])))
         c, score,  pred, pool = zip(*r)
-    elif (first == False and population == None):
+    elif first == False and population == None:
         start_ = name_individual - nr_individual
         for i in range(start_, name_individual):
             x = []
             x.append(i)
             dist['name'].append(x)
         r = Parallel(n_jobs=jobs)(
-            delayed(parallel_distance)(j, bags, group, types) for j in range(100, nr_individual + 100))
+            delayed(parallel_distance)(j) for j in range(100, nr_individual + 100))
         c, score, pred, pool = zip(*r)
-    elif (population != None):
+    elif population != None:
         dist['name'] = population
         indices = []
         for i in population:
             indices.append(bags['name'].index(str(i[0])))
-        r = Parallel(n_jobs=jobs)(delayed(parallel_distance)(i, bags, group, types) for i in indices)
+        r = Parallel(n_jobs=jobs)(delayed(parallel_distance)(i) for i in indices)
         c, score, pred, pool = zip(*r)
     dist['dist'] = Util.dispersion_line(c)
     dist['score'] = score
@@ -45,7 +46,7 @@ def distance(first=False, population=None):
 def diversity(pred, y):
     """
     Calculate diversity measure
-    @param pred: prediction of classificers
+    @param pred: prediction of classifiers
     @param y: original labels
     @return:
     """
@@ -53,19 +54,16 @@ def diversity(pred, y):
     d =Util.diversitys(y, pred)
     return d
 
-def parallel_distance(i, bags, group, types):
+def parallel_distance(i):
     """
-        :param i: list of indices of the bag to be tested
-        :param bags: list of all bags
-        :param group: list with the name of the complexity groups ex: [overllaping,,,,,]
-        :param types: list with the complexity name
-        :return: complexity lists, bag score, validation score, and validation prediction
-    """
-    global classifier, pred_, score_
+          @param i: list of indices of the bag to be tested
+          :return: complexity lists, bag score, validation score, and validation prediction
+      """
+    global classifier, bags, group, types
 
-
+    pred_=[]
     indx_bag1 = bags['inst'][i]
-    X_bag, y_bag = biuld_original_bag(indx_bag1)
+    X_bag, y_bag = build_original_bag(indx_bag1)
     cpx = (Util.complexity_data(X_bag, y_bag, group, types))
 
     if classifier=="perceptron":
@@ -75,19 +73,7 @@ def parallel_distance(i, bags, group, types):
 
     return cpx,  score_,  pred_, classifier
 
-def parallel_score(i, bags):
-    """
-    test classifiers
-    @param i: indices instances
-    @param bags:
-    @return:
-    """
-    indx_bag1 = bags['inst'][i]
-    X_bag, y_bag = biuld_original_bag(indx_bag1)
-    _, score_, _ = Util.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
-    return score_
-
-def biuld_original_bag(indx_bag):
+def build_original_bag(indx_bag):
     """
     Receives the index of instances of a bag
     @param indx_bag:
@@ -108,17 +94,17 @@ def cross(ind1, ind2):
     @param ind2: individual
     @return: new individual
     """
-    global name_individual, cont_crossover, nr_individual, bags, dispersion, ind_out1
+    global name_individual, cont_crossover, nr_individual, bags, dispersion
 
     individual = False
     indx = bags['name'].index(str(ind1[0]))
     indx2 = bags['name'].index(str(ind2[0]))
     indx_bag1 = bags['inst'][indx]
     indx_bag2 = bags['inst'][indx2]
-    _, y_data = biuld_original_bag(indx_bag1)
+    _, y_data = build_original_bag(indx_bag1)
     cont = 0
 
-    while (individual != True):
+    while individual != True:
 
         ind_out1 = short_cross(y_data, indx_bag1, indx_bag2)
         individual = check_data(ind_out1)
@@ -134,10 +120,10 @@ def cross(ind1, ind2):
     bags['inst'].append(ind_out1)
     name_individual += 1
 
-    if (dispersion == True):
+    if dispersion:
         cont_crossover = cont_crossover + 1
 
-        if (cont_crossover == nr_individual + 1):
+        if cont_crossover == nr_individual + 1:
             cont_crossover = 1
             distance(first=False, population=None)
 
@@ -145,7 +131,7 @@ def cross(ind1, ind2):
 
 def short_cross(y_data, indx_bag1, indx_bag2):
     """
-    complementary fuction for corssover
+    complementary function for crossover
     @param y_data: labels
     @param indx_bag1: indices of bag
     @param indx_bag2: indices of bag
@@ -153,11 +139,11 @@ def short_cross(y_data, indx_bag1, indx_bag2):
     """
     start_ = fim = 0
     ind_out1 = []
-    while (y_data[start_] == y_data[fim]):
+    while y_data[start_] == y_data[fim]:
         start_ = random.randint(0, len(y_data) - 1)
         fim = random.randint(start_, len(y_data) - 1)
     for i in range(len(y_data)):
-        if (i <= start_ or i >= fim):
+        if i <= start_ or i >= fim:
             ind_out1.append(indx_bag1[i])
         else:
             ind_out1.append(indx_bag2[i])
@@ -169,8 +155,8 @@ def check_data(ind_out):
     @param ind_out:
     @return: true or false
     """
-    global classes
-    _, y = biuld_original_bag(ind_out)
+    global classes, y, X
+    _, y = build_original_bag(ind_out)
     counter = collections.Counter(y)
     if len(counter.values()) == len(classes) and min(counter.values()) >= 2:
         return True
@@ -183,12 +169,12 @@ def mutate(ind):
     @param ind: individual
     @return: new individual
     """
-    global off, name_individual, cont_crossover, nr_individual, bags, dispersion
+    global off, name_individual, cont_crossover, nr_individual, bags, dispersion, X
     print("mutate")
     ind_out = []
     indx = bags['name'].index(str(ind[0]))
     indx_bag1 = bags['inst'][indx]
-    X, y_data = biuld_original_bag(indx_bag1)
+    X, y_data = build_original_bag(indx_bag1)
     inst = 0
     inst2 = len(y_data)
     if generation == 0 and off == []:
@@ -198,7 +184,7 @@ def mutate(ind):
         ind2 = ind2[0]
     indx2 = bags['name'].index(str(ind2))
     indx_bag2 = bags['inst'][indx2]
-    X2, y2_data = biuld_original_bag(indx_bag2)
+    X2, y2_data = build_original_bag(indx_bag2)
 
     while y_data[inst] != y2_data[inst2 - 1]:
         inst = random.randint(0, len(y_data) - 1)
@@ -214,7 +200,7 @@ def mutate(ind):
 
     ind[0] = name_individual
     name_individual += 1
-    if dispersion == True:
+    if dispersion:
         cont_crossover = cont_crossover + 1
         if cont_crossover == nr_individual + 1:
             cont_crossover = 1
@@ -235,7 +221,7 @@ def fitness_dispercion_line(ind1):
     diver = None
     score = None
     for i in range(len(dist['name'])):
-        if (dist['name'][i][0] == ind1[0]):
+        if dist['name'][i][0] == ind1[0]:
             dist1 = dist['dist'][i][0]
             dist2 = dist['dist'][i][1]
             ###########################
@@ -260,8 +246,8 @@ def the_function(population, gen, fitness):
     @param fitness:
     @return:
     """
-    global generation, off, dispersion, nr_generation, bags, local, file_out, accuracia_ant, \
-        s, c, dist_temp, gen_temp, pop_temp, bags_temp, parada, save_info, generations_escolhida, base_name, fitness_temp
+    global generation, off, dispersion, nr_generation, bags, \
+        dist_temp, generations_final, base_name, fitness_temp
 
     generation = gen
 
@@ -284,26 +270,25 @@ def the_function(population, gen, fitness):
         max_acc(fitness, dist['score_g'], generation=generation, population=off, bags=bags)
     if generation == nr_generation:
         if stop=="maxdistance":
-            save_bags(pop_temp, bags_temp, gen_temp, base_name, type=1, generations_escolhida=generations_escolhida)
+            save_bags( gen_temp, base_name, type=1, generations_final=generations_final)
         elif stop=="maxacc":
-            save_bags(pop_temp, bags_temp, gen_temp, base_name, type=2, generations_escolhida=generations_escolhida)
+            save_bags( gen_temp, base_name, type=2, generations_final=generations_final)
         else:
             save_bags(off,bags,base_name=base_name,type=0)
-    if (dispersion == True and generation != nr_generation):
+    if dispersion == True and generation != nr_generation:
         distance(population=population)
     return population
 
-def save_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, type=0,generations_escolhida="x"):
+def save_bags(gen_temp=None, base_name=None, type=0,generations_final="x"):
     '''
-   :param pop_temp: population to write, usually off
-    :param bags_temp: bags to be written, usually the function bags or max bags (bags_temp)
+
     :param gen_temp: current generations, or the chosen generations (best generations) this adds up to the final file name
     :param base_name: in this case the number of generations next to the base name (this adds up to the output file (final file name))
     :@param name_arq_generations: the name of the file that writes the chosen generation REQUIRED in types 1 and 2
     :param type: first type (0) the traditional final population, type (1) the distance average population, type (2) the global accuracy population
     :return:
     '''
-    global file_out, iteration
+    global file_out, iteration, local, pop_temp, bags_temp
     if type==0:
         for j in pop_temp:
             name = []
@@ -312,8 +297,8 @@ def save_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, type=0,generat
             name.append(bags['name'][indx])
             name.extend(nm)
             Util.save_bag(name, 'bags', local + "/Bags", base_name + file_out, iteration)
-    elif(type==1):
-        x = open(generations_escolhida, "a")
+    elif type==1:
+        x = open(generations_final, "a")
         x.write(base_name + ";" + str(gen_temp) + "\n")
         x.close()
         for j in pop_temp:
@@ -328,7 +313,7 @@ def save_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, type=0,generat
                 Util.save_bag(name, 'bags', local + "/tree/Bags", base_name + file_out, iteration)
 
     elif type==2:
-        x = open(generations_escolhida, "a")
+        x = open(generations_final, "a")
         x.write(base_name + ";" + str(gen_temp) + "\n")
         x.close()
         for j in pop_temp:
@@ -348,7 +333,7 @@ def max_distance(fitness, generation=None, population=None, bags=None):
     @param bags:
     @return:
     """
-    global dist_temp, pop_temp, gen_temp, bags_temp, fitness_temp
+    global dist_temp, fitness_temp, bags_temp,pop_temp
     fitness_temp[0] = fitness[0]
     fitness_temp[1] = fitness[1]
     if fitness[2]:
@@ -408,7 +393,7 @@ nr_child=100
 #counter corssover
 cont_crossover = 1
 #number of iteration
-iteration=21
+
 
 dist_temp=0
 #number of jobs
@@ -418,7 +403,7 @@ stop="maxacc"
 #classifieres "tree" or "perc"
 classifier="tree"#tree,perc
 #name do arquivo de generation (qual generations foi escolhida)
-generations_escolhida="generations_final"
+generations_final="generations_final"
 #name do arquivo com os bags finais
 #file_out = "graficos_tese"+base_name
 fitness_=fitness_dispercion_line
@@ -429,6 +414,9 @@ y=#original labels
 X_vali, y_vali=#validationset
 X_train, y_train=#trainset
 bags=#indices of instaces for each bag
+iteration=21
+classes=#lables [0,1,2,3...]
+local="c:/"#where the final bags are saving
 for t in range(1, iteration):
 
     off = []
@@ -446,7 +434,7 @@ for t in range(1, iteration):
                       toolbox.attr_item, 1)
     population = toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     pop = toolbox.population(n=nr_pop)
-    if dispersion == True:
+    if dispersion:
          distance(first=True)
     #funcao de fitness: fitness_andre - DSOC, fitness_dispercion_diver _ diversity e distance, dispercion_line - dist dist diver
     toolbox.register("evaluate", fitness_)
