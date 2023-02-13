@@ -1,10 +1,120 @@
-# PGCDS
-PGCDS is a classifier generation method based on dataset complexity. PGCDS uses a series of calculations and a genetic algorithm to determine and create the pool of classifiers. The classifiers created by the method have diversity based on the classification problem's properties.
-# Dependencies:
-PGCDS is tested to work with Python 3.7. The dependency requirements are:
-DEAP = 1.3 <br />
-DESLIB = 0.3.5 <br />
-Sklearn = 0.24.2 <br />
-rpy2 = 3.4.5 <br />
-ECoL R Library = 0.2<br />
+<h1 align="center">
+    Exploring diversity in data complexity and classifier decision spaces for pool generation
+</h1>
 
+
+<p>
+This project presents a method for classifier pool generation in which a two-level strategy explores
+diversity in both data complexity and classifier decision spaces. The rationale is to induce pool members
+using data subsets representing subproblems with different difficulties while promoting diversity in classifiers’
+decisions. Two possible variants of the proposed method with a focus on maximum dispersion and maximum
+accuracy are presented. These differ in the property used to define the best pool of classifiers provided by an
+optimization process. A robust experimental protocol encompassing 28 classification datasets shows that the
+proposed pool generation provided the best accuracy on 327 over 336 experiments (97.3%) when compared to
+well-known pool generation methods to provide multiple classifier systems with and without dynamic selection
+<p>
+
+### 🛠 Technologies
+
+The following tools were used in building the project:
+
+- [Python](https://www.python.org/)
+- [R](https://www.r-project.org/)
+- [sklearn](https://scikit-learn.org/stable/)
+- [deap](https://deap.readthedocs.io/en/)
+### Requiments
+
+Before you begin, you will need to have the following tools installed on your machine:
+[Git](https://git-scm.com), [Python](https://www.python.org/), [R](https://www.r-project.org/). 
+Also it's nice to have an editor to work with the code like [VSCode](https://code.visualstudio.com/)
+
+### 🎲 Runing Pool Generation
+
+```bash
+# Clone este repositório
+$ git clone https://github.com/matheusMrs07/pool_generate_marcos.git
+
+# Acesse a pasta do projeto no terminal/cmd
+$ cd pool_generate_marcos
+
+# Instalar os pacotes necessarios para usar o projeto
+$ pip install -r requirements.txt
+
+```
+
+Open the `sample.ipynb` file to see an example of using the project.
+
+
+### ⚙️ Project Settingd 
+
+To run this project, you will need to configure the following variables:
+- `group`: Group of Complexities used to generate the bags.
+    ``` python
+    pool_generate.group = ["overlapping", 'neighborhood']
+    ```
+- `types`: complexity indices that will be used.
+     ``` python
+    pool_generate.types = ["F1", 'T1']
+    ```
+- `method_disperse`: indicates the method of choosing the best bag, True indicates the distance method, False indicates the Accuracy method.
+    ``` python
+    pool_generate.method_disperse = True
+    ```
+- `fit_value`: indicates the fit value of the variables of the disperse method. The value varies between 1.0 and -1.0
+     ```python
+    pool_generate.fit_value1 = 1.0
+    pool_generate.fit_value2 = 1.0
+    pool_generate.fit_value3 = -1.0
+    ```
+- `nr_generation`: Number of bags generations
+    ```python
+    pool_generarte.nr_generation = 19
+    ```
+
+
+- ``nr_individual``: Number of bags resulting from a generation
+
+- `nr_pop`: size of the initial population of bags.
+
+- `proba_crossover`: Probability of a crossover occurring within a generation.
+- `proba_mutation`: Probability of a Mutation occurring during a generation.
+
+- `nr_child`: Number of children created during a generation
+
+- `stop_criteria`: criteria for choosing the best bag. It can be "maxdistance", to use the distance between the variables or "maxacc" to use the accuracy of the bag as a criterion.
+
+- `classifier`: Classifier used to identify the bag with better accuracy, to use decision tree use "tree", to use perceptron user "perc".
+
+
+- `tam_bags`: Percentage of the base reserved for training.
+
+- `nr_bags`: number of bags generated.
+
+- `bags_saved`: variable that stores the generated bags
+
+
+### 💡 Functions
+
+The project provides the following functions:
+- `class poolGeneration(method_disperse=True, fit_value=[1.0, 1.0, -1.0], nr_generation=20, nr_individual=100, nr_pop=100, proba_crossover=0.9, proba_mutation=0.1, nr_child=100, iteration = 20, stop_criteria = "maxdistance", classifier = "tree", tam_bags = 0.5, nr_bags = 100)`: Initialization function, variables are described in the previous section.
+    ``` python
+    pool_generate = poolGeneration()
+    ```
+
+- `generate(X_train, y_train, X_val, y_val, iteration = 20)`: Receives the database, divided into training and testing and the number of interactions that the pool generate will do. This function is responsible for processing data and generating bags.
+     ``` python
+    generate(X_train, y_train, X_val, y_val, iteration = 20)
+    ```
+- `get_bags()`: Returns the bags generated by the class.
+     ``` python
+     pool_generate.get_bags()
+     # [(bag_1), (bag_2), ..., (bag_n)]
+     ```
+- `get_pool()`: Returns the pool of classifiers generated by the class.
+     ``` python
+     pool_generate.get_pool()
+     # [[(classificador_1), (classificador_2), ..., (classificador_n)]]
+     ```
+### 📖 Bibliografy
+
+Para entender o funcinamento e analizar os resultados dessa abordagem acesse o artigo: [Exploring diversity in data complexity and classifier decision spaces for pool generation](https://doi.org/10.1016/j.inffus.2022.09.001)
