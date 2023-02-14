@@ -43,11 +43,12 @@ class poolGeneration:
         stop_criteria = "maxdistance",
         classifier = "tree",
         tam_bags = 0.5,
-        nr_bags = 100
-
+        nr_bags = 100,
+        group = ["overlapping", "neighborhood"],
+        types = ["F1", "T1"]
     ):
-        self.group = ["overlapping", "neighborhood", "", "", "", ""]
-        self.types = ["F1", "T1", "", "", "", ""]
+        self.group = group
+        self.types = types
 
         # tipo de avaliação Disperção/ Acc
         self.method_disperse = method_disperse
