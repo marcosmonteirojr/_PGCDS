@@ -31,13 +31,13 @@ Also it's nice to have an editor to work with the code like [VSCode](https://cod
 ### 🎲 Runing Pool Generation
 
 ```bash
-# Clone este repositório
-$ git clone https://github.com/matheusMrs07/pool_generate_marcos.git
+# Clone this repository
+$ git clone https://github.com/marcosmonteirojr/_PGCDS.git
 
-# Acesse a pasta do projeto no terminal/cmd
+# get in the dir project
 $ cd pool_generate_marcos
 
-# Instalar os pacotes necessarios para usar o projeto
+# Install the requirements
 $ pip install -r requirements.txt
 
 ```
