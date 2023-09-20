@@ -19,6 +19,8 @@ import rpy2.robjects.packages as rpackages
 ecol = rpackages.importr('ECoL')
 import rpy2.robjects as robjects
 
+header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSC', 'linearity.L1', 'linearity.L2', 'linearity.L3', 'dimensionality.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs']
+
 def dispersion_linear(complexity):
     # print(complexity)
 
@@ -109,35 +111,43 @@ def voting_classifier(pool, X_val, y_val):
     return result
 
 def complexity_data3(X_data, y_data, group, types=None):
+    
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
     complex = np.array([])
     for i in range(0, len(group)):
+        if types:
+            measures = types[i]
+        else:
+            measures= "all"
+        
         if group[i] == 'overlapping':
-            over = ecol.overlapping(dfx, dfy, measures=types[i],summary='mean')
+            over = ecol.overlapping(dfx, dfy, measures=measures,summary='mean')
+            
             over = np.asarray(over)
-            complex = np.append(complex, over[0])
+            
+            complex = np.append(complex, over[:,0])
+            
         if group[i] == "neighborhood":
-            nei = ecol.neighborhood(dfx, dfy, measures=types[i],summary='mean')
+            nei = ecol.neighborhood(dfx, dfy, measures=measures,summary='mean')
             nei = np.asarray(nei)
-            complex = np.append(complex, nei[0])
+            complex = np.append(complex, nei[:,0])
         if group[i] == "linearity":
-            line = ecol.linearity(dfx, dfy, measures=types[i])
+            line = ecol.linearity(dfx, dfy, measures=measures,summary='mean')
             line = np.asarray(line)
-            complex = np.append(complex, line[0])
+            complex = np.append(complex, line[:,0])
         if group[i] == "dimensionality":
-            # print('entrei')
-            dim = ecol.dimensionality(dfx, dfy, measures=types[i])
+            dim = ecol.dimensionality(dfx, dfy, measures=measures,summary='mean')
             dim = np.asarray(dim)
-            complex = np.append(complex, dim[0])
+            complex = np.append(complex, dim[:,0])
         if group[i] == "balance":
-            bal = ecol.balance(dfx, dfy, measures=types[i])
+            bal = ecol.balance(dfx, dfy, measures=measures,summary='mean')
             bal = np.asarray(bal)
-            complex = np.append(complex, bal[0])
+            complex = np.append(complex, bal[:,0])
         if group[i] == "network":
-            net = ecol.network(dfx, dfy, measures=types[i])
+            net = ecol.network(dfx, dfy, measures=measures,summary='mean')
             net = np.asarray(net)
-            complex = np.append(complex, net[0])
+            complex = np.append(complex, net[:,0])
     complex = complex.tolist()
     del dfx, dfy
     return complex
@@ -249,3 +259,4 @@ def dispersion(complexity):
     for i in dista:
         result.append(np.mean(i))
     return result
+
